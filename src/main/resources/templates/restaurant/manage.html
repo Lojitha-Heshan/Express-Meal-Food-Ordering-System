@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Menu - ExpressMeal Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="background:#f7f5f2;">
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Manage Menu Items</h3>
+        <a th:href="@{/restaurant/manage/new}" class="btn btn-warning">+ Add Item</a>
+    </div>
+    <table class="table bg-white shadow-sm rounded">
+        <thead class="table-light">
+        <tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+            <td>
+                <img th:if="${item.imageUrl != null and !item.imageUrl.isEmpty()}"
+                     th:src="${item.imageUrl}" style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
+            </td>
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.category}"></td>
+            <td th:text="${item.price}"></td>
+            <td th:text="${item.available} ? 'Yes' : 'No'"></td>
+            <td>
+                <a th:href="@{/restaurant/manage/edit/{id}(id=${item.itemId})}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a th:href="@{/restaurant/manage/delete/{id}(id=${item.itemId})}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

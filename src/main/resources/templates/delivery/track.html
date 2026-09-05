@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Track Delivery</title>
+</head>
+<body>
+<h1>Track Your Delivery</h1>
+
+<ul>
+    <li th:classappend="${delivery.deliveryStatus != null} ? 'done'">Order Confirmed</li>
+    <li th:classappend="${delivery.rider != null} ? 'done'">
+        Assigned to Rider
+        <span th:if="${delivery.rider != null}" th:text="'(' + ${delivery.rider.name} + ' - ' + ${delivery.rider.phoneNumber} + ')'"></span>
+    </li>
+    <li th:classappend="${delivery.deliveryStatus == 'OUT_FOR_DELIVERY' or delivery.deliveryStatus == 'DELIVERED'} ? 'done'">Out for Delivery</li>
+    <li th:classappend="${delivery.deliveryStatus == 'DELIVERED'} ? 'done'">Delivered</li>
+</ul>
+</body>
+</html>
