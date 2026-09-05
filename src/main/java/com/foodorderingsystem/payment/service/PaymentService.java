@@ -8,7 +8,11 @@ import com.foodorderingsystem.payment.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 public class PaymentService {
@@ -57,5 +61,24 @@ public class PaymentService {
         return paymentRepository.findByStatus("SUCCESS").stream()
                 .mapToDouble(Payment::getAmount)
                 .sum();
+    }
+
+    // Revenue grouped by month (e.g. "Jan 2026"), sorted chronologically - used for the admin dashboard chart
+    public Map<String, Double> getMonthlyRevenue() {
+        DateTimeFormatter keyFmt = DateTimeFormatter.ofPattern("yyyy-MM");
+        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("MMM yyyy");
+
+        Map<String, Double> sortedByKey = new TreeMap<>();
+        for (Payment payment : paymentRepository.findByStatus("SUCCESS")) {
+            String key = payment.getPaidAt().format(keyFmt);
+            sortedByKey.merge(key, payment.getAmount(), Double::sum);
+        }
+
+        Map<String, Double> result = new LinkedHashMap<>();
+        sortedByKey.forEach((key, total) -> {
+            String label = java.time.YearMonth.parse(key).format(labelFmt);
+            result.put(label, total);
+        });
+        return result;
     }
 }

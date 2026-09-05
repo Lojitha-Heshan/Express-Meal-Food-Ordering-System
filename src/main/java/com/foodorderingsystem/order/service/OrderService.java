@@ -9,6 +9,7 @@ import com.foodorderingsystem.restaurant.service.MenuItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,5 +71,14 @@ public class OrderService {
         Order order = getById(id);
         order.setPaymentStatus(paymentStatus);
         return orderRepository.save(order);
+    }
+
+    // Count of orders per status (Pending, Confirmed, Out for Delivery, Delivered...) - used for the admin dashboard chart
+    public Map<String, Long> getOrderStatusBreakdown() {
+        Map<String, Long> breakdown = new LinkedHashMap<>();
+        for (Order order : getAllOrders()) {
+            breakdown.merge(order.getStatus(), 1L, Long::sum);
+        }
+        return breakdown;
     }
 }
