@@ -28,4 +28,9 @@ public class Delivery {
     private LocalDateTime assignedAt;
 
     private LocalDateTime deliveredAt;
+
+    //  set once after DELIVERED
+    private Integer rating;
+
+    private String ratingComment;
 }

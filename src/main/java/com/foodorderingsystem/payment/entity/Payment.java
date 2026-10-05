@@ -23,6 +23,13 @@ public class Payment {
 
     private String method; // CARD, CASH_ON_DELIVERY
 
+    // extra fee charged for the chosen payment method (e.g. a card gateway fee) -
+    // decided by PaymentStrategy, see payment.strategy package
+    private Double processingFee = 0.0;
+
+    // flat delivery fee charged on every order, regardless of payment method
+    private Double deliveryFee = 0.0;
+
     private String status = "PENDING"; // PENDING, SUCCESS, FAILED
 
     private LocalDateTime paidAt = LocalDateTime.now();
