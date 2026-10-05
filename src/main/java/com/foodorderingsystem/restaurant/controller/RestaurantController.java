@@ -1,13 +1,16 @@
 package com.foodorderingsystem.restaurant.controller;
 
 import com.foodorderingsystem.restaurant.entity.MenuItem;
+import com.foodorderingsystem.restaurant.factory.MenuItemFactory;
 import com.foodorderingsystem.restaurant.service.MenuItemService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/restaurant")
@@ -15,6 +18,15 @@ public class RestaurantController {
 
     @Autowired
     private MenuItemService menuItemService;
+
+    @Autowired
+    private MenuItemFactory menuItemFactory;
+
+    // Menu management (everything under /manage) is admin-only; /menu stays public for customers
+    private boolean notAdmin(HttpSession session) {
+        Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+        return isAdmin == null || !isAdmin;
+    }
 
     // Customer-facing menu browsing (optionally filtered by category)
     @GetMapping("/menu")
@@ -31,35 +43,57 @@ public class RestaurantController {
 
     // Admin: manage menu
     @GetMapping("/manage")
-    public String manageMenu(Model model) {
+    public String manageMenu(HttpSession session, Model model) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         model.addAttribute("items", menuItemService.getAllItems());
         return "restaurant/manage";
     }
 
+    // Factory pattern: MenuItemFactory decides sensible name/price/description/image
+    // defaults for the chosen category - this controller just asks for a category and
+    // doesn't need to know what a "good" Rice item or Drinks item looks like.
     @GetMapping("/manage/new")
-    public String showAddForm(Model model) {
-        model.addAttribute("item", new MenuItem());
+    public String showAddForm(@RequestParam(required = false) String template, HttpSession session, Model model) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
+        model.addAttribute("item", menuItemFactory.createDefaultItem(template));
         return "restaurant/item-form";
     }
 
     @GetMapping("/manage/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
+    public String showEditForm(@PathVariable Long id, HttpSession session, Model model) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         model.addAttribute("item", menuItemService.getById(id));
         return "restaurant/item-form";
     }
 
     @PostMapping("/manage/save")
-    public String save(@Valid @ModelAttribute("item") MenuItem item, BindingResult result) {
+    public String save(@Valid @ModelAttribute("item") MenuItem item, BindingResult result,
+                       HttpSession session, RedirectAttributes redirectAttributes) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         if (result.hasErrors()) {
             return "restaurant/item-form";
         }
+        boolean isNew = item.getItemId() == null;
         menuItemService.save(item);
+        redirectAttributes.addFlashAttribute("success", isNew ? "Menu item added." : "Menu item updated.");
         return "redirect:/restaurant/manage";
     }
 
     @GetMapping("/manage/delete/{id}")
-    public String delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (notAdmin(session)) {
+            return "redirect:/login";
+        }
         menuItemService.delete(id);
+        redirectAttributes.addFlashAttribute("success", "Menu item deleted.");
         return "redirect:/restaurant/manage";
     }
 }

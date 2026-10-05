@@ -2,24 +2,211 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"><title>Checkout - ExpressMeal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        *{font-family:'Poppins',sans-serif;}
+        body{background:#FFF8F2;}
+        .card-panel{border:none; border-radius:18px; box-shadow:0 8px 24px rgba(0,0,0,.06);}
+        .order-summary{background:#fff8f2; border-radius:12px; padding:16px 18px;}
+        .total-row{font-size:1.4rem; font-weight:700; color:#1c1c1e;}
+        .method-option{border:1.5px solid #eee; border-radius:12px; padding:14px 16px; cursor:pointer; transition:.15s; display:flex; align-items:center; gap:12px;}
+        .method-option:hover{border-color:#ffcbb0;}
+        .method-option.selected{border-color:#FF6B35; background:#fff6f2; box-shadow:0 0 0 3px rgba(255,107,53,.1);}
+        .method-option input{accent-color:#FF6B35;}
+        .method-icon{width:38px; height:38px; border-radius:10px; background:#f2f2f2; display:flex; align-items:center; justify-content:center; font-size:1.2rem;}
+        .method-option.selected .method-icon{background:#ffe4d6; color:#FF6B35;}
+        .card-fields{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+        .card-fields.open{max-height:280px; margin-top:14px;}
+        .form-control{border-radius:10px; padding:10px 14px; border:1.5px solid #eee;}
+        .form-control:focus{border-color:#FF6B35; box-shadow:0 0 0 3px rgba(255,107,53,.15);}
+        .form-control.is-invalid{border-color:#dc3545;}
+        .field-error{font-size:.78rem; color:#dc3545; margin-top:3px; display:none;}
+        .btn-pay{background:#FF6B35; border:none; color:#fff; border-radius:50px; font-weight:600; padding:12px; transition:.2s;}
+        .btn-pay:hover{background:#e85a2a; color:#fff;}
+        .btn-pay:disabled{background:#ffb69a; cursor:not-allowed;}
+        .secure-note{font-size:.78rem; color:#999; display:flex; align-items:center; gap:6px; justify-content:center;}
+    </style>
 </head>
-<body style="background:#f7f5f2;">
-<div class="container my-5" style="max-width:450px;">
-    <div class="card p-4 shadow-sm">
-        <h4 class="mb-3">Payment</h4>
-        <p>Order #<span th:text="${order.orderId}"></span></p>
-        <h5 class="mb-3">Total: Rs. <span th:text="${order.totalAmount}"></span></h5>
-        <form th:action="@{/payment/pay}" method="post">
+<body>
+<div class="container my-5" style="max-width:480px;">
+    <div class="card card-panel p-4">
+        <h4 class="mb-1 fw-bold">Checkout</h4>
+        <p class="text-muted small mb-3">Order #<span th:text="${order.orderId}"></span></p>
+        <p th:if="${error}" class="alert alert-danger py-2 small" th:text="${error}"></p>
+
+        <div class="order-summary mb-4">
+            <div class="d-flex justify-content-between text-muted small mb-1" th:if="${order.deliveryAddress}">
+                <span><i class="bi bi-geo-alt-fill"></i> Delivering to</span>
+            </div>
+            <p class="mb-2 small" th:if="${order.deliveryAddress}" th:text="${order.deliveryAddress}"></p>
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Subtotal</span>
+                <span>Rs. <span th:text="${order.totalAmount}"></span></span>
+            </div>
+            <div class="d-flex justify-content-between small text-muted mb-2">
+                <span>Delivery Fee</span>
+                <span>Rs. <span th:text="${deliveryFee}"></span></span>
+            </div>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between total-row">
+                <span>Total</span>
+                <span>Rs. <span th:text="${order.totalAmount + deliveryFee}"></span></span>
+            </div>
+        </div>
+
+        <form th:action="@{/payment/pay}" method="post" id="paymentForm">
             <input type="hidden" name="orderId" th:value="${order.orderId}" />
-            <label class="form-label">Payment Method</label>
-            <select name="method" class="form-select mb-3">
-                <option value="CARD">Card (simulated)</option>
-                <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
-            </select>
-            <button type="submit" class="btn btn-warning w-100">Pay Now</button>
+            <input type="hidden" name="method" id="methodInput" value="CASH_ON_DELIVERY" />
+
+            <label class="form-label fw-semibold small">Payment method</label>
+
+            <div class="method-option selected mb-2" data-method="CASH_ON_DELIVERY">
+                <div class="method-icon"><i class="bi bi-cash-coin"></i></div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Cash on Delivery</div>
+                    <div class="text-muted small">Pay when your order arrives</div>
+                </div>
+                <input type="radio" name="methodRadio" checked>
+            </div>
+
+            <div class="method-option mb-2" data-method="CARD">
+                <div class="method-icon"><i class="bi bi-credit-card-fill"></i></div>
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">Card <span class="text-muted small fw-normal">(simulated)</span></div>
+                    <div class="text-muted small">Visa, Mastercard · 2% processing fee applies</div>
+                </div>
+                <input type="radio" name="methodRadio">
+            </div>
+
+            <!-- Card fields are for UX/validation only - never submitted to the server (simulated payment) -->
+            <div class="card-fields" id="cardFields">
+                <div class="mb-2">
+                    <label class="form-label small">Card number</label>
+                    <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456" inputmode="numeric" maxlength="19">
+                    <div class="field-error" id="cardNumberError">Enter a valid 16-digit card number.</div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-7">
+                        <label class="form-label small">Expiry (MM/YY)</label>
+                        <input type="text" class="form-control" id="cardExpiry" placeholder="MM/YY" inputmode="numeric" maxlength="5">
+                        <div class="field-error" id="cardExpiryError">Enter a valid, non-expired date.</div>
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label small">CVV</label>
+                        <input type="password" class="form-control" id="cardCvv" placeholder="123" inputmode="numeric" maxlength="3">
+                        <div class="field-error" id="cardCvvError">3 digits.</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-pay w-100 mt-4" id="payBtn">
+                <i class="bi bi-lock-fill"></i> Pay Now - Rs. <span th:text="${order.totalAmount}"></span>
+            </button>
+            <p class="secure-note mt-3 mb-0"><i class="bi bi-shield-check"></i> Secure simulated checkout - no real card charge</p>
         </form>
     </div>
 </div>
+
+<script>
+    const options = document.querySelectorAll('.method-option');
+    const methodInput = document.getElementById('methodInput');
+    const cardFields = document.getElementById('cardFields');
+    const payBtn = document.getElementById('payBtn');
+
+    function selectMethod(el) {
+        options.forEach(o => { o.classList.remove('selected'); o.querySelector('input').checked = false; });
+        el.classList.add('selected');
+        el.querySelector('input').checked = true;
+        const method = el.dataset.method;
+        methodInput.value = method;
+        cardFields.classList.toggle('open', method === 'CARD');
+        validateForm();
+    }
+
+    options.forEach(el => el.addEventListener('click', () => selectMethod(el)));
+
+    const cardNumber = document.getElementById('cardNumber');
+    const cardExpiry = document.getElementById('cardExpiry');
+    const cardCvv = document.getElementById('cardCvv');
+
+    cardNumber.addEventListener('input', () => {
+        let digits = cardNumber.value.replace(/\D/g, '').slice(0, 16);
+        cardNumber.value = digits.replace(/(.{4})/g, '$1 ').trim();
+        validateForm();
+    });
+
+    cardExpiry.addEventListener('input', () => {
+        let digits = cardExpiry.value.replace(/\D/g, '').slice(0, 4);
+        cardExpiry.value = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+        validateForm();
+    });
+
+    cardCvv.addEventListener('input', () => {
+        cardCvv.value = cardCvv.value.replace(/\D/g, '').slice(0, 3);
+        validateForm();
+    });
+
+    function isCardNumberValid() {
+        return cardNumber.value.replace(/\s/g, '').length === 16;
+    }
+
+    function isExpiryValid() {
+        const match = cardExpiry.value.match(/^(\d{2})\/(\d{2})$/);
+        if (!match) return false;
+        const month = parseInt(match[1], 10);
+        const year = 2000 + parseInt(match[2], 10);
+        if (month < 1 || month > 12) return false;
+        const now = new Date();
+        const expiryDate = new Date(year, month);
+        return expiryDate > now;
+    }
+
+    function isCvvValid() {
+        return cardCvv.value.length === 3;
+    }
+
+    function validateForm() {
+        const method = methodInput.value;
+        let valid = true;
+
+        if (method === 'CARD') {
+            const cnOk = isCardNumberValid();
+            const exOk = isExpiryValid();
+            const cvOk = isCvvValid();
+
+            toggleField(cardNumber, 'cardNumberError', cardNumber.value.length === 0 ? null : cnOk);
+            toggleField(cardExpiry, 'cardExpiryError', cardExpiry.value.length === 0 ? null : exOk);
+            toggleField(cardCvv, 'cardCvvError', cardCvv.value.length === 0 ? null : cvOk);
+
+            valid = cnOk && exOk && cvOk;
+        }
+
+        payBtn.disabled = !valid;
+    }
+
+    function toggleField(input, errorId, ok) {
+        const err = document.getElementById(errorId);
+        if (ok === null) { input.classList.remove('is-invalid'); err.style.display = 'none'; return; }
+        input.classList.toggle('is-invalid', !ok);
+        err.style.display = ok ? 'none' : 'block';
+    }
+
+    document.getElementById('paymentForm').addEventListener('submit', function (e) {
+        if (methodInput.value === 'CARD' && payBtn.disabled) {
+            e.preventDefault();
+            return;
+        }
+        cardNumber.removeAttribute('name');
+        cardExpiry.removeAttribute('name');
+        cardCvv.removeAttribute('name');
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+    });
+
+    validateForm();
+</script>
 </body>
 </html>

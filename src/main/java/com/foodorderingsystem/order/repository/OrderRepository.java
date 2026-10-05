@@ -9,4 +9,5 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByCustomerOrderByCreatedAtDesc(Customer customer);
     List<Order> findAllByOrderByCreatedAtDesc();
+    long countByCustomer(Customer customer);
 }
