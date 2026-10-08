@@ -106,7 +106,7 @@
     <div class="row g-4 mb-4">
         <div class="col-md-6">
             <div class="card p-4 shadow-sm h-100">
-                <h6 class="mb-3"><i class="bi bi-megaphone-fill" style="color:#FF6B35;"></i> Site Announcement (Singleton)</h6>
+                <h6 class="mb-3"><i class="bi bi-megaphone-fill" style="color:#FF6B35;"></i> Site Announcement </h6>
                 <p class="text-muted small">Shown as a banner on the home page to every visitor. Stored in one shared <code>AppSettings</code> instance - no database table needed.</p>
                 <form th:action="@{/admin/settings}" method="post">
                     <textarea name="announcementMessage" class="form-control mb-2" rows="2"
@@ -125,7 +125,7 @@
         <!-- Observer pattern: recent delivery status-change events collected by AdminNotificationObserver -->
         <div class="col-md-6">
             <div class="card p-4 shadow-sm h-100">
-                <h6 class="mb-3"><i class="bi bi-bell-fill" style="color:#3b82f6;"></i> Recent Delivery Activity (Observer)</h6>
+                <h6 class="mb-3"><i class="bi bi-bell-fill" style="color:#3b82f6;"></i> Recent Delivery Activity </h6>
                 <p class="text-muted small">Every delivery status change notifies this observer automatically.</p>
                 <div style="max-height:220px; overflow-y:auto;">
                     <p th:each="entry : ${recentActivity}" class="small mb-1 text-muted" th:text="${entry}"></p>

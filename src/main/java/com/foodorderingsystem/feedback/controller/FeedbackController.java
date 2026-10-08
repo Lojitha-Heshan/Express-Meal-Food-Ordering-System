@@ -18,7 +18,8 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/feedback")
-public class FeedbackController {
+public class
+FeedbackController {
 
     @Autowired
     private FeedbackService feedbackService;
