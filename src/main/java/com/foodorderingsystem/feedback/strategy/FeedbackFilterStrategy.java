@@ -7,7 +7,7 @@ import java.util.List;
 // Strategy pattern: each concrete strategy defines its own rule for narrowing down
 // the full feedback list. FeedbackController (the "client") doesn't need to know
 // the filtering rule itself - it just asks FeedbackFilterFactory for the right
-// strategy and calls filter() on it.
+
 public interface FeedbackFilterStrategy {
     List<Feedback> filter(List<Feedback> allFeedback, Long loggedInCustomerId);
 

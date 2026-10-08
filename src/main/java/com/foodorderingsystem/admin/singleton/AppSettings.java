@@ -1,7 +1,6 @@
 package com.foodorderingsystem.admin.singleton;
 
 // Classic GoF Singleton (matches the lecture's "private constructor + static getInstance()"
-// structure exactly): there is only ever ONE AppSettings object for the whole running
 // application, holding site-wide settings the admin controls - an announcement banner shown
 // to every customer, and a maintenance-mode switch. Any class that needs these settings calls
 // AppSettings.getInstance() rather than creating its own copy, so every part of the app (the

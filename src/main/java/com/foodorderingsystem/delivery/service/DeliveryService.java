@@ -23,9 +23,7 @@ import java.util.stream.Collectors;
 public class DeliveryService {
 
     // Flat commission paid to the rider for every order they deliver -
-    // 20% of the Rs.250 flat delivery fee charged to the customer (see payment.service.PaymentService.DELIVERY_FEE).
-    // Kept as its own constant here (rather than reading PaymentService) to avoid a circular
-    // dependency, since PaymentService already depends on DeliveryService.
+
     public static final double RIDER_COMMISSION_PER_DELIVERY = 100.0;
 
     @Autowired
